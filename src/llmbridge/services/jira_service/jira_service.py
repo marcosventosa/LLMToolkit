@@ -42,6 +42,10 @@ class AddCommentModel(BaseModel):
     issue_key: str = Field(..., description="Key of the Jira issue")
     comment_body: str = Field(..., description="Body of the comment")
 
+class ChangeIssuePriorityModel(BaseModel):
+    issue_key: str = Field(..., description="Key of the Jira issue")
+    priority_name: str = Field(..., description="Name of the priority")
+
 class TransitionIssueModel(BaseModel):
     issue_key: str = Field(..., description="Key of the Jira issue")
     transition_name: str = Field(..., description="Name of the transition")
@@ -111,6 +115,7 @@ class JiraService:
         }
 
     #function to get user from the credentials
+    @expose_for_llm
     def get_user(self) -> str:
         """Retrieves the user information in Jira."""
         try:
@@ -192,6 +197,14 @@ class JiraService:
         """Retrieves the list of priorities in Jira."""
         priorities = self.jira.priorities()
         return f"Total priorities: {len(priorities)}\nPriorities:\n{str(priorities)}"
+
+    @expose_for_llm
+    def change_issue_priority(self, data: ChangeIssuePriorityModel) -> str:
+        """Changes the priority of an issue."""
+        issue = self.jira.issue(data.issue_key)
+        issue.update(fields={"priority": {"name": data.priority_name}})
+        return f"Priority of issue {data.issue_key} changed to '{data.priority_name}'."
+
 
     @expose_for_llm
     def add_comment(self, data: AddCommentModel) -> str:
