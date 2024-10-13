@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "jira-agent"
+name = "LLMBridge"
 version = "0.1.0"
-description = "An intelligent agent powered by Large Language Models (LLMs) for seamless interaction with various services and APIs, enhancing productivity and automation across multiple platforms."
+description = "An open-source project providing a unified interface to integrate Large Language Models (LLMs) with various services."
 authors = ["Marcos Ventosa"]
 license = "MIT"
 readme = "README.md"
