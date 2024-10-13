@@ -6,7 +6,7 @@ import tiktoken
 from dotenv import load_dotenv
 
 from llmbridge.llm_interface.llm_interface import LLMInterface
-from llmbridge.services.jira_service.jira_service import JiraService, jira_agent_system_message
+from llmbridge.services.jira_service.jira_service import JiraService
 
 load_dotenv()
 
@@ -28,6 +28,8 @@ if __name__ == "__main__":
 
     client = openai.OpenAI()
     model = os.getenv("OPENAI_MODEL")
+
+    jira_agent_system_message = jira_service.get_jira_agent_system_message()
 
     messages = []
     start_message = "Hello! I'm your Jira Assistant, here to help you manage your projects and tasks efficiently. How can I assist you today?"
