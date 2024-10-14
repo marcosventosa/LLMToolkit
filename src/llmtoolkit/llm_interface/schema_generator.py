@@ -1,7 +1,6 @@
 import inspect
 from typing import Any, Callable, Dict, List, Union, get_args, get_origin
 
-from docstring_parser import parse
 from pydantic import BaseModel
 
 TYPE_MAPPING: Dict[str, str] = {
@@ -25,11 +24,12 @@ def generate_function_schemas(cls: object) -> List[Dict[str, Any]]:
 def generate_schema_for_method(name: str, method: Callable) -> Dict[str, Any]:
     signature = inspect.signature(method)
     validate_return_type(name, signature)
-    docstring = parse(method.__doc__)
+    docstring = inspect.getdoc(method)
+
 
     function_schema: Dict[str, Any] = {
         "name": name,
-        "description": docstring.description or "",
+        "description": docstring or "",
         "parameters": {
             "type": "object",
             "properties": {},

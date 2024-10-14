@@ -1,10 +1,10 @@
-# LLMBridge
+# LLMToolkit
 
 An open-source project providing a unified interface to integrate Large Language Models (LLMs) with various services.
 
 ## Overview
 
-**LLMBridge** connects Large Language Models (LLMs) with various services through a unified interface called the **LLMInterface**. The primary focus is on simplifying the integration of new services without directly managing LLM interactions. The `LLMInterface` generates function schemas and handles service calls by leveraging docstrings and Pydantic models from your service methods.
+**LLMToolkit** connects Large Language Models (LLMs) with various services through a unified interface called the **LLMInterface**. The primary focus is on simplifying the integration of new services without directly managing LLM interactions. The `LLMInterface` generates function schemas and handles service calls by leveraging docstrings and Pydantic models from your service methods.
 
 The `LLMInterface` can manage multiple services simultaneously, allowing the LLM to interact with a variety of tools and services within a single framework. This flexibility enables the creation of rich and complex applications that leverage the strengths of different services together.
 
@@ -38,42 +38,63 @@ This README explains how to create new services and integrate them with the `LLM
 ### Prerequisites
 
 - **Python**: Version 3.11 or higher.
-- **Poetry**: Python dependency management tool. [Installation Guide](https://python-poetry.org/docs/#installation).
+- **Poetry** (optional): Python dependency management tool. [Installation Guide](https://python-poetry.org/docs/#installation).
 
 ### Steps
 
 1. **Clone the Repository**
 
    ```bash
-   git clone https://github.com/marcosventosa/LLMBridge.git
-   cd LLMBridge
+   git clone https://github.com/marcosventosa/LLMToolkit.git
+   cd LLMToolkit
    ```
 
 2. **Install Dependencies**
 
-   Install all dependencies, including the package itself, using Poetry:
+   You can install all dependencies, including the package itself, using either **Poetry** or **pip**.
+
+   **Option 1: Using Poetry**
 
    ```bash
    poetry install
    ```
 
-3. **Activate the Virtual Environment**
+   **Option 2: Using pip**
+
+   First, it's recommended to create a virtual environment:
 
    ```bash
-   poetry shell
+   python -m venv venv
+   source venv/bin/activate  # On Windows use: venv\Scripts\activate
    ```
 
-   This command starts a new shell with the virtual environment activated.
+   Then install the package in editable mode with the required dependencies:
+
+   ```bash
+   pip install -e . 
+   ```
+
+3. **Activate the Virtual Environment**
+
+   - If you used **Poetry**, activate the virtual environment:
+
+     ```bash
+     poetry shell
+     ```
+
+     This command starts a new shell with the virtual environment activated.
+
+   - If you used **pip** and created a virtual environment manually, ensure it's activated (as shown in Option 2 above).
 
 ## Project Structure
 
 ```
-LLMBridge/
+LLMToolkit/
 ├── pyproject.toml
 ├── poetry.lock
 ├── README.md
 ├── src/
-│   └── llmbridge/
+│   └── llmtoolkit/
 │       ├── __init__.py
 │       ├── llminterface/
 │       │   ├── __init__.py
@@ -94,14 +115,14 @@ LLMBridge/
 │   └── ... (other examples)
 ```
 
-- **`src/llmbridge/`**: Contains the source code for the project.
+- **`src/llmtoolkit/`**: Contains the source code for the project.
   - **`llminterface/`**: Core interface for managing function schemas and handling service calls.
   - **`services/`**: Service integrations, starting with Jira and potentially including others like web search.
 - **`examples/`**: Example scripts demonstrating how to use the library.
 
 ## Quick Start
 
-Here's a simple example of how to use LLMBridge with **multiple services** using the `LLMInterface`. This example includes the Jira service and a hypothetical Web Search service.
+Here's a simple example of how to use LLMToolkit with **multiple services** using the `LLMInterface`. This example includes the Jira service and a hypothetical Web Search service.
 
 ### Example: Using the LLMInterface with Multiple Services
 
@@ -111,9 +132,9 @@ Here's a simple example of how to use LLMBridge with **multiple services** using
 import os
 from dotenv import load_dotenv
 
-from llmbridge.llminterface.llm_interface import LLMInterface
-from llmbridge.services.jira_service.jira_service import JiraService
-from llmbridge.services.web_search_service.web_search_service import WebSearchService
+from llmtoolkit.llminterface.llm_interface import LLMInterface
+from llmtoolkit.services.jira_service.jira_service import JiraService
+from llmtoolkit.services.web_search_service.web_search_service import WebSearchService
 
 load_dotenv()
 
@@ -179,19 +200,19 @@ In this example, the `LLMInterface` is initialized with both the `JiraService` a
 
 ## Creating a New Service
 
-One of the main goals of LLMBridge is to make it easy to integrate new services. The `LLMInterface` can manage multiple services at the same time, enabling the LLM to interact with all of them seamlessly.
+One of the main goals of LLMToolkit is to make it easy to integrate new services. The `LLMInterface` can manage multiple services at the same time, enabling the LLM to interact with all of them seamlessly.
 
 ### Service Implementation Guidelines
 
 1. **Create a Service Class**
 
-   - Create a new directory for your service under `src/llmbridge/services/`.
+   - Create a new directory for your service under `src/llmtoolkit/services/`.
    - Implement your service class in a file within this directory.
 
    **Example Structure:**
 
    ```
-   src/llmbridge/services/
+   src/llmtoolkit/services/
    ├── __init__.py
    ├── jira_service/
    │   ├── __init__.py
@@ -246,9 +267,9 @@ One of the main goals of LLMBridge is to make it easy to integrate new services.
 1. **Import Your Services and the LLMInterface**
 
    ```python
-   from llmbridge.llminterface.llm_interface import LLMInterface
-   from llmbridge.services.jira_service.jira_service import JiraService
-   from llmbridge.services.web_search_service.web_search_service import WebSearchService
+   from llmtoolkit.llminterface.llm_interface import LLMInterface
+   from llmtoolkit.services.jira_service.jira_service import JiraService
+   from llmtoolkit.services.web_search_service.web_search_service import WebSearchService
    # Import any additional services
    ```
 
@@ -362,7 +383,7 @@ Contributions are welcome! Since the project focuses on enhancing the `LLMInterf
 
 ## Roadmap
 
-As LLMBridge continues to develop, we have several plans to enhance its capabilities:
+As LLMToolkit continues to develop, we have several plans to enhance its capabilities:
 
 - **Support for Additional LLM Providers**: We plan to integrate support for more LLM providers beyond OpenAI.
 
@@ -381,7 +402,7 @@ As LLMBridge continues to develop, we have several plans to enhance its capabili
 
 - **Testing and CI/CD Integration**: Implement unit tests, integration tests, and set up continuous integration workflows to maintain code quality.
 
-We welcome contributions and suggestions from the community to help shape the direction of LLMBridge. Feel free to open issues or pull requests with your ideas and enhancements.
+We welcome contributions and suggestions from the community to help shape the direction of LLMToolkit. Feel free to open issues or pull requests with your ideas and enhancements.
 
 ## License
 
@@ -389,6 +410,6 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ---
 
-If you have any questions or need further assistance, feel free to [open an issue](https://github.com/marcosventosa/LLMBridge/issues).
+If you have any questions or need further assistance, feel free to [open an issue](https://github.com/marcosventosa/LLMToolkit/issues).
 
 ---
