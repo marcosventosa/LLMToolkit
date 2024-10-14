@@ -5,8 +5,8 @@ import openai
 import tiktoken
 from dotenv import load_dotenv
 
-from llmbridge.llm_interface.llm_interface import LLMInterface
-from llmbridge.services.jira_service.jira_service import JiraService
+from llmtoolkit.llm_interface.llm_interface import LLMInterface
+from llmtoolkit.services.jira_service.jira_service import JiraService
 
 load_dotenv()
 

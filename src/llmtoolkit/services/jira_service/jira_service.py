@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 from jira import JIRA, resources
 from pydantic import BaseModel, Field
 
-from llmbridge.llm_interface.utils import expose_for_llm
+from llmtoolkit.llm_interface.utils import expose_for_llm
 
 # Configure logging
 logging.basicConfig(level=logging.ERROR)

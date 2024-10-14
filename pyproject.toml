@@ -1,20 +1,19 @@
 [tool.poetry]
-name = "LLMBridge"
+name = "LLMToolkit"
 version = "0.1.0"
 description = "An open-source project providing a unified interface to integrate Large Language Models (LLMs) with various services."
 authors = ["Marcos Ventosa"]
 license = "MIT"
 readme = "README.md"
 
-# Include the 'llmbridge' package from the 'src' directory
+# Include the 'llmtoolkit' package from the 'src' directory
 packages = [
-    { include = "llmbridge", from = "src" }
+    { include = "llmtoolkit", from = "src" }
 ]
 
 [tool.poetry.dependencies]
 python = "^3.11"
 openai = "^1.51.2"
-docstring-parser = "^0.16"
 python-dotenv = "^1.0.1"
 pydantic = "^2.9.2"
 tiktoken = "^0.8.0"

@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Tuple
 
 from pydantic import BaseModel, ValidationError
 
-from llmbridge.llm_interface.schema_generator import generate_function_schemas
+from llmtoolkit.llm_interface.schema_generator import generate_function_schemas
 
 # Configure logging
 logging.basicConfig(level=logging.WARNING)
