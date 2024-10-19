@@ -17,6 +17,9 @@ openai = "^1.51.2"
 python-dotenv = "^1.0.1"
 pydantic = "^2.9.2"
 tiktoken = "^0.8.0"
+duckduckgo-search = "^6.3.0"
+requests = "^2.32.3"
+beautifulsoup4 = "^4.12.3"
 
 
 [tool.poetry.group.dev.dependencies]
