@@ -29,7 +29,7 @@ if __name__ == "__main__":
     client = openai.OpenAI()
     model = os.getenv("OPENAI_MODEL")
 
-    jira_agent_system_message = jira_service.get_jira_agent_system_message()
+    jira_agent_system_message = jira_service.get_agent_system_message()
 
     messages = []
     start_message = "Hello! I'm your Jira Assistant, here to help you manage your projects and tasks efficiently. How can I assist you today?"

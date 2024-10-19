@@ -49,6 +49,10 @@ class UpdateFieldToIssueModel(BaseModel):
     field_name: str = Field(..., description="Name of the field to add")
     field_value: str = Field(..., description="Value of the field to add")
 
+class UpdateDescriptionIssueModel(BaseModel):
+    issue_key: str = Field(..., description="Key of the Jira issue (e.g., 'PROJ-123').")
+    description: str = Field(..., description="New description of the issue.")
+
 class JiraService:
     def __init__(self, server, username, api_token):
         """Initializes the connection to the Jira server."""
@@ -64,7 +68,7 @@ class JiraService:
             **Issue Types:**\n{issue_types}\n\n**Priorities:**\n{priorities}"""
         return context
 
-    def get_jira_agent_system_message(self) -> str:
+    def get_agent_system_message(self) -> str:
         """Returns the system message for the Jira Agent."""
         jira_agent_system_message = f"""You are a Jira Assistant designed to help users manage Jira projects efficiently.
 
@@ -173,6 +177,13 @@ class JiraService:
         #issue.fields.__dict__[data.field_name] = data.field_value
         issue.update(fields={data.field_name: {"name": data.field_value}})
         return f"Field '{data.field_name}' added to issue {data.issue_key}."
+
+    @expose_for_llm
+    def update_issue_description(self, data: UpdateDescriptionIssueModel) -> str:
+        """Updates the description of a Jira issue."""
+        issue = self.jira.issue(data.issue_key)
+        issue.update(fields={"description": data.description})
+        return f"Description of issue {data.issue_key} updated."
 
     @expose_for_llm
     def get_issue_types(self) -> str:
