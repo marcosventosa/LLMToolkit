@@ -20,6 +20,7 @@ tiktoken = "^0.8.0"
 duckduckgo-search = "^6.3.0"
 requests = "^2.32.3"
 beautifulsoup4 = "^4.12.3"
+msal = "^1.31.0"
 
 
 [tool.poetry.group.dev.dependencies]
