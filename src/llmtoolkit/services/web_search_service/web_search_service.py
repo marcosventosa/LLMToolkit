@@ -12,34 +12,35 @@ from llmtoolkit.llm_interface.utils import expose_for_llm
 logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
-class SearchQueryModel(BaseModel):
-    query: str = Field(..., description="Search query string")
-    region: Optional[str] = Field("wt-wt", description="Region code (e.g., 'wt-wt', 'us-en')")
-    safesearch: Optional[str] = Field('moderate', description="Level of safe search ('on', 'moderate', 'off')")
-    timelimit: Optional[str] = Field(None, description="Time period to filter results ('d', 'w', 'm', 'y')")
-    max_results: Optional[int] = Field(10, description="Maximum number of results to return")
+class SearchModel(BaseModel):
+    query: str = Field(..., description="The search query string.")
+    region: Optional[str] = Field("wt-wt", description="Region code for localized results (e.g., 'wt-wt', 'us-en').")
+    safesearch: Optional[str] = Field('moderate', description="Safe search level: 'on', 'moderate', or 'off'.")
+    timelimit: Optional[str] = Field(None, description="Time frame for results: 'd' (day), 'w' (week), 'm' (month), or 'y' (year).")
+    max_results: Optional[int] = Field(10, description="Maximum number of search results to return.")
 
-class ImageSearchQueryModel(BaseModel):
-    query: str = Field(..., description="Image search query string")
-    region: Optional[str] = Field("wt-wt", description="Region code (e.g., 'wt-wt', 'us-en')")
-    safesearch: Optional[str] = Field('moderate', description="Level of safe search ('on', 'moderate', 'off')")
-    timelimit: Optional[str] = Field(None, description="Time period to filter results ('Day', 'Week', 'Month', 'Year')")
-    size: Optional[str] = Field(None, description="Image size filter ('Small', 'Medium', 'Large', 'Wallpaper')")
-    color: Optional[str] = Field(None, description="Image color filter (e.g., 'color', 'Monochrome', 'Red')")
-    type_image: Optional[str] = Field(None, description="Image type filter ('photo', 'clipart', 'gif', 'transparent', 'line')")
-    layout: Optional[str] = Field(None, description="Image layout filter ('Square', 'Tall', 'Wide')")
-    license_image: Optional[str] = Field(None, description="License filter ('any', 'Public', 'Share', 'ShareCommercially', 'Modify', 'ModifyCommercially')")
-    max_results: Optional[int] = Field(10, description="Maximum number of results to return")
 
-class NewsSearchQueryModel(BaseModel):
-    query: str = Field(..., description="News search query string")
-    region: Optional[str] = Field("wt-wt", description="Region code (e.g., 'wt-wt', 'us-en')")
-    safesearch: Optional[str] = Field('moderate', description="Level of safe search ('on', 'moderate', 'off')")
-    timelimit: Optional[str] = Field(None, description="Time period to filter results ('d', 'w', 'm')")
-    max_results: Optional[int] = Field(10, description="Maximum number of results to return")
+class ImageSearchModel(BaseModel):
+    query: str = Field(..., description="The image search query string.")
+    region: Optional[str] = Field("wt-wt", description="Region code for localized image results (e.g., 'wt-wt', 'us-en').")
+    safesearch: Optional[str] = Field('moderate', description="Safe search level: 'on', 'moderate', or 'off'.")
+    timelimit: Optional[str] = Field(None, description="Time frame for image results: 'Day', 'Week', 'Month', or 'Year'.")
+    size: Optional[str] = Field(None, description="Filter images by size: 'Small', 'Medium', 'Large', or 'Wallpaper'.")
+    color: Optional[str] = Field(None, description="Filter images by color (e.g., 'color', 'Monochrome', 'Red').")
+    type_image: Optional[str] = Field(None, description="Filter images by type: 'photo', 'clipart', 'gif', 'transparent', or 'line'.")
+    layout: Optional[str] = Field(None, description="Filter images by layout: 'Square', 'Tall', or 'Wide'.")
+    license_image: Optional[str] = Field(None, description="Filter images by license: 'any', 'Public', 'Share', 'ShareCommercially', 'Modify', or 'ModifyCommercially'.")
+    max_results: Optional[int] = Field(10, description="Maximum number of image results to return.")
+
+class NewsSearchModel(BaseModel):
+    query: str = Field(..., description="The news search query string.")
+    region: Optional[str] = Field("wt-wt", description="Region code for localized news results (e.g., 'wt-wt', 'us-en').")
+    safesearch: Optional[str] = Field('moderate', description="Safe search level: 'on', 'moderate', or 'off'.")
+    timelimit: Optional[str] = Field(None, description="Time frame for news results: 'd' (day), 'w' (week), or 'm' (month).")
+    max_results: Optional[int] = Field(10, description="Maximum number of news results to return.")
 
 class WebScrapeModel(BaseModel):
-    url: str = Field(..., description="URL to scrape")
+    url: str = Field(..., description="The URL of the web page to scrape.")
 
 class WebSearchService:
 
@@ -59,129 +60,131 @@ class WebSearchService:
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
 }
 
-    def get_duckduckgo_agent_system_message(self) -> str:
-        """Returns the system message for the DuckDuckGo Agent."""
-        system_message = """**System Message: DuckDuckGo Agent LLM**
-You are an intelligent assistant designed to help users search the web efficiently using DuckDuckGo.
-Please adhere to the following guidelines:
+    def get_web_search_agent_system_message(self) -> str:
+        """Returns the system message for the web search agent."""
+        system_message = """You are a highly capable assistant equipped with web search functionalities. Your purpose is to help users find information efficiently by performing web searches.
 
-1. **Understand User Intent**: Carefully analyze user queries to accurately determine their search needs.
+**Your Objectives:**
 
-2. **Perform Searches**: Use DuckDuckGo to perform web searches and retrieve relevant results.
+1. **Comprehend User Requests:** Carefully understand the user's questions or information needs.
 
-3. **Provide Accurate Information**: Ensure that search results are relevant and accurate.
+2. **Utilize Provided Functions:** Use the functions effectively by supplying the appropriate parameters based on the user's request.
 
-4. **Enhance Productivity**: Assist users by providing concise summaries of search results.
+3. **Provide Clear Responses:** Present the information in a concise and understandable manner, summarizing results when necessary.
 
-5. **Maintain User Privacy**: Respect user privacy and confidentiality.
+**Instructions:**
 
-6. **Be Polite and Professional**: Communicate in a courteous and professional manner.
-
-By following these guidelines, you will provide valuable assistance to users, helping them find the information they need effectively.
+- If additional information is needed to perform a function, politely ask the user for clarification.
+- Focus on being accurate, helpful, and efficient in assisting the user.
 """
         return system_message
 
     @expose_for_llm
-    def search(self, data: SearchQueryModel) -> str:
-        """Performs a web search using DuckDuckGo."""
-        try:
-            ddgs = DDGS(headers=self.DEFAULT_HEADERS)
-            results_generator = ddgs.text(
-                keywords=data.query,
-                region=data.region,
-                safesearch=data.safesearch,
-                timelimit=data.timelimit,
-                max_results=data.max_results
-            )
-            results = list(results_generator)
-            if not results:
-                return f"No results found for query: {data.query}"
-            else:
-                # Return formatted results
-                formatted_results = ''
-                for idx, result in enumerate(results, start=1):
-                    formatted_results += (
-                        f"Result {idx}:\n"
-                        f"Title: {result.get('title', 'No Title')}\n"
-                        f"Snippet: {result.get('body', 'No Snippet')}\n"
-                        f"URL: {result.get('href', 'No URL')}\n\n"
-                    )
-                return formatted_results
-        except Exception as e:
-            logger.error(f"Failed to perform search: {str(e)}")
-            return f"Failed to perform search: {str(e)}"
+    def search(self, data: SearchModel) -> str:
+        """Performs a web search based on the provided query and parameters.
+
+        Returns:
+            str: A formatted string containing the search results.
+        """
+        ddgs = DDGS(headers=self.DEFAULT_HEADERS)
+        results_generator = ddgs.text(
+            keywords=data.query,
+            region=data.region,
+            safesearch=data.safesearch,
+            timelimit=data.timelimit,
+            max_results=data.max_results
+        )
+        results = list(results_generator)
+        if not results:
+            return f"No results found for query: {data.query}"
+        else:
+            # Return formatted results
+            formatted_results = ''
+            for idx, result in enumerate(results, start=1):
+                formatted_results += (
+                    f"Result {idx}:\n"
+                    f"Title: {result.get('title', 'No Title')}\n"
+                    f"Snippet: {result.get('body', 'No Snippet')}\n"
+                    f"URL: {result.get('href', 'No URL')}\n\n"
+                )
+            return formatted_results
 
     @expose_for_llm
-    def image_search(self, data: ImageSearchQueryModel) -> str:
-        """Performs an image search using DuckDuckGo."""
-        try:
-            ddgs = DDGS(headers=self.DEFAULT_HEADERS)
-            results_generator = ddgs.images(
-                keywords=data.query,
-                region=data.region,
-                safesearch=data.safesearch,
-                timelimit=data.timelimit,
-                size=data.size,
-                color=data.color,
-                type_image=data.type_image,
-                layout=data.layout,
-                license_image=data.license_image,
-                max_results=data.max_results
-            )
-            results = list(results_generator)
-            if not results:
-                return f"No image results found for query: {data.query}"
-            else:
-                # Return formatted image search results
-                formatted_results = ''
-                for idx, result in enumerate(results, start=1):
-                    formatted_results += (
-                        f"Image Result {idx}:\n"
-                        f"Title: {result.get('title', 'No Title')}\n"
-                        f"Image URL: {result.get('image', 'No Image URL')}\n"
-                        f"Thumbnail URL: {result.get('thumbnail', 'No Thumbnail URL')}\n"
-                        f"Source: {result.get('source', 'No Source')}\n\n"
-                    )
-                return formatted_results
-        except Exception as e:
-            logger.error(f"Failed to perform image search: {str(e)}")
-            return f"Failed to perform image search: {str(e)}"
+    def image_search(self, data: ImageSearchModel) -> str:
+        """Performs an image search based on the provided query and parameters.
+
+        Returns:
+            str: A formatted string containing the image search results.
+        """
+        ddgs = DDGS(headers=self.DEFAULT_HEADERS)
+        results_generator = ddgs.images(
+            keywords=data.query,
+            region=data.region,
+            safesearch=data.safesearch,
+            timelimit=data.timelimit,
+            size=data.size,
+            color=data.color,
+            type_image=data.type_image,
+            layout=data.layout,
+            license_image=data.license_image,
+            max_results=data.max_results
+        )
+        results = list(results_generator)
+        if not results:
+            return f"No image results found for query: {data.query}"
+        else:
+            # Return formatted image search results
+            formatted_results = ''
+            for idx, result in enumerate(results, start=1):
+                formatted_results += (
+                    f"Image Result {idx}:\n"
+                    f"Title: {result.get('title', 'No Title')}\n"
+                    f"Image URL: {result.get('image', 'No Image URL')}\n"
+                    f"Thumbnail URL: {result.get('thumbnail', 'No Thumbnail URL')}\n"
+                    f"Source: {result.get('source', 'No Source')}\n\n"
+                )
+            return formatted_results
 
     @expose_for_llm
-    def news_search(self, data: NewsSearchQueryModel) -> str:
-        """Performs a news search using DuckDuckGo."""
-        try:
-            ddgs = DDGS(headers=self.DEFAULT_HEADERS)
-            results_generator = ddgs.news(
-                keywords=data.query,
-                region=data.region,
-                safesearch=data.safesearch,
-                timelimit=data.timelimit,
-                max_results=data.max_results
-            )
-            results = list(results_generator)
-            if not results:
-                return f"No news results found for query: {data.query}"
-            else:
-                # Return formatted news search results
-                formatted_results = ''
-                for idx, result in enumerate(results, start=1):
-                    formatted_results += (
-                        f"News Result {idx}:\n"
-                        f"Title: {result.get('title', 'No Title')}\n"
-                        f"Snippet: {result.get('body', 'No Snippet')}\n"
-                        f"URL: {result.get('url', 'No URL')}\n"
-                        f"Date: {result.get('date', 'No Date')}\n\n"
-                    )
-                return formatted_results
-        except Exception as e:
-            logger.error(f"Failed to perform news search: {str(e)}")
-            return f"Failed to perform news search: {str(e)}"
+    def news_search(self, data: NewsSearchModel) -> str:
+        """Performs a news search based on the provided query and parameters.
+
+        Returns:
+            str: A formatted string containing the news search results.
+        """
+        ddgs = DDGS(headers=self.DEFAULT_HEADERS)
+        results_generator = ddgs.news(
+            keywords=data.query,
+            region=data.region,
+            safesearch=data.safesearch,
+            timelimit=data.timelimit,
+            max_results=data.max_results
+        )
+        results = list(results_generator)
+        if not results:
+            return f"No news results found for query: {data.query}"
+        else:
+            # Return formatted news search results
+            formatted_results = ''
+            for idx, result in enumerate(results, start=1):
+                formatted_results += (
+                    f"News Result {idx}:\n"
+                    f"Title: {result.get('title', 'No Title')}\n"
+                    f"Snippet: {result.get('body', 'No Snippet')}\n"
+                    f"URL: {result.get('url', 'No URL')}\n"
+                    f"Date: {result.get('date', 'No Date')}\n\n"
+                    f"Source: {result.get('source', 'No Source')}\n\n"
+                )
+            return formatted_results
 
     # TODO: Beautify the text, maybe remove the beautifulsoup dependency
     @expose_for_llm
     def web_scrape(self, data: WebScrapeModel) -> str:
-        """Performs a web scrape given a url."""
+        """Scrapes and returns the text content from the provided URL.
+
+        Returns:
+            str: The textual content extracted from the web page.
+        """
         response = requests.get(data.url)
         # Parse all text
         soup = BeautifulSoup(response.text, 'html.parser')

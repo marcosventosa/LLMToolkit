@@ -27,7 +27,7 @@ if __name__ == "__main__":
     client = openai.OpenAI()
     model = os.getenv("OPENAI_MODEL")
 
-    web_search_agent_system_prompt = web_search_service.get_duckduckgo_agent_system_message()
+    web_search_agent_system_prompt = web_search_service.get_web_search_agent_system_message()
 
     messages = []
     start_message = "Hello! I'm your Web Search Assistant, here to help you find information on the web. How can I assist you today?"
