@@ -13,39 +13,39 @@ logger = logging.getLogger(__name__)
 
 # TODO: Give it the ability to add more fields if needed
 class CreateIssueModel(BaseModel):
-    summary: str = Field(..., description="Summary of the issue")
-    project_key: str = Field(..., description="Key of the Jira project")
-    issue_type: str = Field("Task", description="Type of the issue")
-    description: Optional[str] = Field(None, description="Description of the issue")
+    summary: str = Field(..., description="Summary of the issue.")
+    project_key: str = Field(..., description="Key of the Jira project (e.g., 'PROJ').")
+    issue_type: str = Field("Task", description="Type of the issue (e.g., 'Task', 'Bug'...).")
+    description: Optional[str] = Field(None, description="Detailed description of the issue.")
 
 class AddCommentModel(BaseModel):
-    issue_key: str = Field(..., description="Key of the Jira issue")
-    comment_body: str = Field(..., description="Body of the comment")
+    issue_key: str = Field(..., description="Key of the Jira issue (e.g., 'PROJ-123').")
+    comment_body: str = Field(..., description="Content of the comment to add.")
 
 class ChangeIssuePriorityModel(BaseModel):
-    issue_key: str = Field(..., description="Key of the Jira issue")
-    priority_name: str = Field(..., description="Name of the priority")
+    issue_key: str = Field(..., description="Key of the Jira issue (e.g., 'PROJ-123').")
+    priority_name: str = Field(..., description="New priority level (e.g., 'High', 'Medium'...).")
 
 class TransitionIssueModel(BaseModel):
-    issue_key: str = Field(..., description="Key of the Jira issue")
-    transition_name: str = Field(..., description="Name of the transition")
+    issue_key: str = Field(..., description="Key of the Jira issue (e.g., 'PROJ-123').")
+    transition_name: str = Field(..., description="Name of the transition to apply (e.g., 'Done', 'In Progress'...).")
 
 class SearchModel(BaseModel):
-    jql: str = Field(..., description="Jira Query Language query")
+    jql: str = Field(..., description="Jira Query Language (JQL) string to search issues.")
     start_at: int = Field(0, description="Index of the first issue to return")
-    max_results: int = Field(0, description="Maximum number of issues to return")
+    max_results: int = Field(0, description="Maximum number of issues to return. Defaults to all issues.")
     need_all_fields: bool = Field(False, description="If True, all fields will be returned. If False, only relevant fields will be returned. Only use while searching for a single issue.")
 
 class AssignIssueModel(BaseModel):
-    issue_key: str = Field(..., description="Key of the Jira issue")
-    assignee_name: str = Field(..., description="Name of the assignee. -1 will set it to Unnasigned.")
+    issue_key: str = Field(..., description="Key of the Jira issue (e.g., 'PROJ-123').")
+    assignee_name: str = Field(..., description="Username of the assignee. Use '-1' to unassign.")
 
 class AddLabelToIssueModel(BaseModel):
-    issue_key: str = Field(..., description="Key of the Jira issue")
-    label: str = Field(..., description="Label to add to the issue")
+    issue_key: str = Field(..., description="Key of the Jira issue (e.g., 'PROJ-123').")
+    label: str = Field(..., description="Label to add to the issue.")
 
 class UpdateFieldToIssueModel(BaseModel):
-    issue_key: str = Field(..., description="Key of the Jira issue")
+    issue_key: str = Field(..., description="Key of the Jira issue (e.g., 'PROJ-123').")
     field_name: str = Field(..., description="Name of the field to add")
     field_value: str = Field(..., description="Value of the field to add")
 
@@ -66,28 +66,25 @@ class JiraService:
 
     def get_jira_agent_system_message(self) -> str:
         """Returns the system message for the Jira Agent."""
-        jira_agent_system_message = f"""**System Message: Jira Agent LLM**
-        You are an intelligent assistant designed to help users manage and navigate their Jira projects efficiently. Your primary functions include creating, updating, and retrieving information about issues, projects, and workflows within Jira. Please adhere to the following guidelines while interacting with users:
+        jira_agent_system_message = f"""You are a Jira Assistant designed to help users manage Jira projects efficiently.
 
-        **Context Information**
-        {self._get_initial_context()}
+**Your Objectives:**
 
-        1. **Understand User Intent**: Carefully analyze user queries to accurately determine their needs. Ask clarifying questions if necessary to ensure you understand the request.
+1. **Understand User Requests:** Carefully interpret user instructions related to managing Jira issues, such as creating issues, adding comments, or updating issue fields.
 
-        2. **Perform Searches and Actions**: In cases where a task requires additional information, leverage your ability to perform searches and actions. Utilize your comprehensive understanding of Jira to fetch and relay the necessary information or take appropriate actions within the system.
+2. **Provide Clear Responses:** Present the results or information in a clear and concise manner.
 
-        3. **Provide Accurate Information**: Use your knowledge of Jira's functionalities to provide precise and relevant information. Ensure that your responses are up-to-date with the latest Jira features and best practices.
+3. **Handle Errors Gracefully:** If an error occurs or more information is needed, communicate this politely to the user.
 
-        4. **Facilitate Task Management**: Assist users in creating, updating, and managing Jira issues, including tasks, bugs, and stories. Guide them through the process of setting priorities, assigning tasks, and tracking progress.
+**Instructions:**
 
-        5. **Enhance Productivity**: Offer tips and best practices for using Jira effectively. Suggest ways to optimize workflows and improve project management efficiency.
+- If additional information is needed to perform a function, ask the user for clarification.
+- Do not include unnecessary information or perform actions outside of the provided functionalities.
+- Focus on being accurate, helpful, and efficient in assisting the user with Jira tasks.
 
-        6. **Maintain User Privacy**: Respect user privacy and confidentiality. Do not request or store any sensitive information beyond what is necessary to fulfill the user's request.
-
-        7. **Be Polite and Professional**: Communicate in a courteous and professional manner. Ensure that your language is clear, concise, and free of jargon unless the user is familiar with technical terms.
-
-        By following these guidelines, you will provide valuable assistance to users, helping them to effectively manage their projects and achieve their goals using Jira.
-        """
+**Context Information**
+{self._get_initial_context()}
+"""
         return jira_agent_system_message
 
     def _parse_issue(self, issue: resources.Issue) -> Dict[str, Any]:
@@ -110,24 +107,6 @@ class JiraService:
                 "updated": c.updated,
                 }
                 for c in issue.fields.comment.comments],
-        }
-
-    # TODO: Find a way to make the output less verbose, maybe could be a good idea to have an exposed function to get \
-    # all fields names from an issue and another to get the value of a specific field to avoid returning all fields \
-    # in the response. One issue can have 3k tokens in the response while parsing the whole issue.
-    def _parse_full_issue(self, issue: resources.Issue) -> dict:
-        """Parses a Jira issue into a dictionary with all fields."""
-        parsed_issue = {}
-        parsed_issue['key'] = issue.key
-        parsed_issue.update({field: issue.raw['fields'][field] for field in issue.raw['fields']})
-        return parsed_issue
-
-    def _parse_project(self, project: resources.Project) -> dict:
-        """Parses a Jira project into a dictionary with only relevant fields."""
-        return {
-            'key': project.key,
-            'name': project.name,
-            'projectTypeKey': project.projectTypeKey,
         }
 
     #function to get user from the credentials
@@ -153,7 +132,7 @@ class JiraService:
 
     @expose_for_llm
     def search_issues(self, data: SearchModel) -> str:
-        """Search for issues in Jira using JQL language and return relevant fields.
+        """Search for issues in Jira using JQL language and return the issues information.
 
         Ej: status = "In Progress" AND assignee = currentUser().
         """
@@ -168,7 +147,7 @@ class JiraService:
 
     @expose_for_llm
     def create_issue(self, data: CreateIssueModel) -> str:
-        """Creates a new issue in Jira."""
+        """Creates a new issue in Jira and returns the issue key."""
         issue_dict = {
             'project': {'key': data.project_key},
             'summary': data.summary,
@@ -188,7 +167,7 @@ class JiraService:
 
     @expose_for_llm
     def update_field_of_issue(self, data: UpdateFieldToIssueModel) -> str:
-        """Adds a field to a Jira issue."""
+        """Updates a specific field of a Jira issue."""
         issue = self.jira.issue(data.issue_key)
         # TODO: Check if the field exists, if not it will raise an exception
         #issue.fields.__dict__[data.field_name] = data.field_value
@@ -243,3 +222,21 @@ class JiraService:
             available_transitions = [t['name'] for t in transitions]
             return f"Transition '{data.transition_name}' not found for issue {data.issue_key}. Available transitions:\
                   {', '.join(available_transitions)}."
+
+    # TODO: Find a way to make the output less verbose, maybe could be a good idea to have an exposed function to get \
+    # all fields names from an issue and another to get the value of a specific field to avoid returning all fields \
+    # in the response. One issue can have 3k tokens in the response while parsing the whole issue.
+    def _parse_full_issue(self, issue: resources.Issue) -> dict:
+        """Parses a Jira issue into a dictionary with all fields."""
+        parsed_issue = {}
+        parsed_issue['key'] = issue.key
+        parsed_issue.update({field: issue.raw['fields'][field] for field in issue.raw['fields']})
+        return parsed_issue
+
+    def _parse_project(self, project: resources.Project) -> dict:
+        """Parses a Jira project into a dictionary with only relevant fields."""
+        return {
+            'key': project.key,
+            'name': project.name,
+            'projectTypeKey': project.projectTypeKey,
+        }
