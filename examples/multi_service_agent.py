@@ -6,12 +6,13 @@ import tiktoken
 from dotenv import load_dotenv
 
 from llmtoolkit.llm_interface.llm_interface import LLMInterface
+from llmtoolkit.services.jira_service.jira_service import JiraService
 from llmtoolkit.services.web_search_service.web_search_service import WebSearchService
 
 load_dotenv()
 
 def count_tokens(text):
-    """Simplified aproach to count the number of tokens in a given text."""
+    """Simplified approach to count the number of tokens in a given text."""
     if text:
         encoding = tiktoken.encoding_for_model(os.getenv("OPENAI_MODEL"))
         return len(encoding.encode(text))
@@ -19,26 +20,46 @@ def count_tokens(text):
         return 0
 
 if __name__ == "__main__":
+    # Initialize both services
+    jira_service = JiraService(
+        server=os.getenv("JIRA_DOMAIN"),
+        username=os.getenv("JIRA_USERNAME"),
+        api_token=os.getenv("JIRA_API_TOKEN")
+    )
     web_search_service = WebSearchService()
-    llm_service_interface = LLMInterface([web_search_service])
+
+    # Initialize LLM Interface with both services
+    llm_service_interface = LLMInterface([jira_service, web_search_service])
+
+    # Get combined function schemas
     tools_schemas = llm_service_interface.get_function_schemas()
     print("Available functions:", [schema["function"]['name'] for schema in tools_schemas])
 
+    # Initialize OpenAI client
     client = openai.OpenAI()
     model = os.getenv("OPENAI_MODEL")
 
-    web_search_agent_system_prompt = web_search_service.get_agent_system_message()
+    # Get agent system messages
+    jira_agent_system_message = jira_service.get_agent_system_message()
+    web_search_agent_system_message = web_search_service.get_agent_system_message()
 
+    # Combine system messages
+    combined_system_message = (
+        "You are an assistant capable of helping users with Jira tasks and performing web searches.\n\n"
+        f"{jira_agent_system_message}\n\n"
+        f"{web_search_agent_system_message}"
+    )
+
+    # Initialize conversation messages
     messages = []
-    start_message = "Hello! I'm your Web Search Assistant, here to help you find information on the web. How can I assist you today?"
-    messages.append({"role": "system", "content": web_search_agent_system_prompt})
+    start_message = "Hello! I am your assistant, here to help you with Jira tasks and web searches. How can I assist you today?"
+    messages.append({"role": "system", "content": combined_system_message})
     messages.append({"role": "assistant", "content": start_message})
     print(f"Assistant: {start_message}\n")
 
-    total_input_tokens = count_tokens(web_search_agent_system_prompt) + count_tokens(start_message)
+    total_input_tokens = count_tokens(combined_system_message) + count_tokens(start_message)
     total_output_tokens = count_tokens(start_message)
     total_tool_tokens = 0
-
     while True:
         user_input = input("You: ")
         if user_input.lower() in ['exit', 'quit']:

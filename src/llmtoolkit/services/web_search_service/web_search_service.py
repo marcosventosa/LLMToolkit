@@ -60,7 +60,7 @@ class WebSearchService:
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
 }
 
-    def get_web_search_agent_system_message(self) -> str:
+    def get_agent_system_message(self) -> str:
         """Returns the system message for the web search agent."""
         system_message = """You are a highly capable assistant equipped with web search functionalities. Your purpose is to help users find information efficiently by performing web searches.
 

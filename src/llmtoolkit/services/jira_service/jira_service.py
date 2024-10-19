@@ -68,7 +68,7 @@ class JiraService:
             **Issue Types:**\n{issue_types}\n\n**Priorities:**\n{priorities}"""
         return context
 
-    def get_jira_agent_system_message(self) -> str:
+    def get_agent_system_message(self) -> str:
         """Returns the system message for the Jira Agent."""
         jira_agent_system_message = f"""You are a Jira Assistant designed to help users manage Jira projects efficiently.
 
