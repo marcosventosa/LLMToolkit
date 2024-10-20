@@ -164,3 +164,6 @@ cython_debug/
 # VS Code
 #  This ignores the .vscode/ folder which might contain user-specific settings and tasks.json files
 .vscode/
+
+# Gmail credentials token
+creds/gmail_token.json
