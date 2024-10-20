@@ -1,5 +1,5 @@
 import inspect
-from typing import Any, Callable, Dict, List, Union, get_args, get_origin
+from typing import Any, Callable, Dict, List, Union, Optional, get_args, get_origin
 
 from pydantic import BaseModel
 
@@ -59,34 +59,34 @@ def process_parameter(param: inspect.Parameter, function_schema: Dict[str, Any])
             add_field_to_schema(field_name, field, function_schema)
 
 def add_field_to_schema(field_name: str, field: Any, function_schema: Dict[str, Any]) -> None:
-    type_name = get_json_schema_type(field.annotation)
-    function_schema["parameters"]["properties"][field_name] = {
+    type_name, items = get_json_schema_type(field.annotation)
+    field_dict = {
         "type": type_name,
         "description": field.description or f"Parameter: {field_name}"
     }
+    if items:
+        field_dict.update(items)
+
+    function_schema["parameters"]["properties"][field_name] = field_dict
     if field.is_required():
         function_schema["parameters"]["required"].append(field_name)
 
-def get_json_schema_type(python_type: Any) -> Union[str, Dict[str, Any]]:
+def get_json_schema_type(python_type: Any) -> tuple[Union[str, Dict[str, Any]], Optional[Dict[str, Any]]]:
     origin = get_origin(python_type)
     args = get_args(python_type)
 
     if origin is None:
-        return TYPE_MAPPING.get(python_type.__name__, 'string')
+        return TYPE_MAPPING.get(python_type.__name__, 'string'), None
     elif origin in (list, tuple):
-        item_type = get_json_schema_type(args[0]) if args else 'string'
-        return {
-            "type": "array",
-            "items": {
-                "type": item_type
-            }
-        }
+        item_type = get_json_schema_type(args[0])[0] if args else 'string'
+        return 'array', {"items": {"type": item_type}}
+
     elif origin is dict:
-        return "object"
+        return "object", None
     elif origin is Union:
         non_none_args = [arg for arg in args if arg.__name__ != 'NoneType']
         if len(non_none_args) > 1:
             print(f"Warning: Multiple types in Union type {python_type}")
         return get_json_schema_type(non_none_args[0])
     else:
-        return 'string'
+        return 'string', None
