@@ -151,7 +151,24 @@ class JiraService:
 
     @expose_for_llm
     def create_issue(self, data: CreateIssueModel) -> str:
-        """Creates a new issue in Jira and returns the issue key."""
+        """Creates a new issue in Jira with a clear and detailed summary and description.
+
+        To create a good Jira issue, ensure that:
+
+        - The **summary** provides a concise statement of the problem or task.
+        - The **description** includes all necessary information to complete the work, such as:
+            - **Context and Background:** Briefly explain the context or background of the issue.
+            - **Detailed Description:** Elaborate on the problem or task, providing specifics.
+            - **Expected Result:** Describe what should happen.
+            - **Actual Result:** Describe what is currently happening.
+            - **Impact or Justification:** Explain how this issue affects users or the project.
+            - **Attachments or References:** Include any relevant information, logs, or links.
+
+        A well-crafted issue should be organized and clear, enabling team members to understand the work that needs to be done without ambiguity.
+
+        Returns:
+            str: Key of the created issue.
+        """
         issue_dict = {
             'project': {'key': data.project_key},
             'summary': data.summary,
