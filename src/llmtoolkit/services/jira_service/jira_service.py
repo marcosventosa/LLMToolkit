@@ -38,7 +38,7 @@ class SearchModel(BaseModel):
 
 class AssignIssueModel(BaseModel):
     issue_key: str = Field(..., description="Key of the Jira issue (e.g., 'PROJ-123').")
-    assignee_name: str = Field(..., description="Username of the assignee. Use '-1' to unassign.")
+    assignee_name: str = Field(..., description="Username (not id) of the assignee. Use '-1' to unassign.")
 
 class AddLabelToIssueModel(BaseModel):
     issue_key: str = Field(..., description="Key of the Jira issue (e.g., 'PROJ-123').")

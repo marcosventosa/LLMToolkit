@@ -6,6 +6,7 @@ import tiktoken
 from dotenv import load_dotenv
 
 from llmtoolkit.llm_interface.llm_interface import LLMInterface
+from llmtoolkit.services.gmail_service.gmail_service import GmailService
 from llmtoolkit.services.jira_service.jira_service import JiraService
 from llmtoolkit.services.web_search_service.web_search_service import WebSearchService
 
@@ -20,16 +21,17 @@ def count_tokens(text):
         return 0
 
 if __name__ == "__main__":
-    # Initialize both services
+    # Initialize services
     jira_service = JiraService(
         server=os.getenv("JIRA_DOMAIN"),
         username=os.getenv("JIRA_USERNAME"),
         api_token=os.getenv("JIRA_API_TOKEN")
     )
     web_search_service = WebSearchService()
+    gmail_service = GmailService(credentials_path=os.getenv("GMAIL_CREDENTIALS_PATH"))
 
     # Initialize LLM Interface with both services
-    llm_service_interface = LLMInterface([jira_service, web_search_service])
+    llm_service_interface = LLMInterface([jira_service, web_search_service, gmail_service])
 
     # Get combined function schemas
     tools_schemas = llm_service_interface.get_function_schemas()
@@ -42,17 +44,19 @@ if __name__ == "__main__":
     # Get agent system messages
     jira_agent_system_message = jira_service.get_agent_system_message()
     web_search_agent_system_message = web_search_service.get_agent_system_message()
+    gmail_agent_system_message = gmail_service.get_agent_system_message()
 
     # Combine system messages
     combined_system_message = (
         "You are an assistant capable of helping users with Jira tasks and performing web searches.\n\n"
         f"{jira_agent_system_message}\n\n"
-        f"{web_search_agent_system_message}"
+        f"{web_search_agent_system_message}\n\n"
+        f"{gmail_agent_system_message}"
     )
 
     # Initialize conversation messages
     messages = []
-    start_message = "Hello! I am your assistant, here to help you with Jira tasks and web searches. How can I assist you today?"
+    start_message = "Hello! I am your assistant, here to help you with Jira tasks, web searches and email management. How can I assist you today?"
     messages.append({"role": "system", "content": combined_system_message})
     messages.append({"role": "assistant", "content": start_message})
     print(f"Assistant: {start_message}\n")
