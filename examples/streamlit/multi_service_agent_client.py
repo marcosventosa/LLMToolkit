@@ -108,7 +108,7 @@ def display_chat_history() -> None:
 def main() -> None:
     """Main application function."""
     # Set up the Streamlit app
-    st.title("Web Search Agent")
+    st.title("LLM Multi-Service Agent")
     
     # Initialize session state and API client
     init_session_state()
