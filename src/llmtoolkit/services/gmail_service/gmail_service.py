@@ -1,5 +1,4 @@
 import base64
-import json
 import logging
 import os
 import re
@@ -16,6 +15,8 @@ from googleapiclient.discovery import build
 from pydantic import BaseModel, Field
 
 from llmtoolkit.llm_interface.utils import expose_for_llm
+
+# How to configure -> https://developers.google.com/gmail/api/quickstart/python
 
 # Configure logging
 logging.basicConfig(level=logging.ERROR)
@@ -56,7 +57,7 @@ class ModifyEmailModel(BaseModel):
     mark_as_read: Optional[bool] = Field(None, description="Set to True to mark as read, False to mark as unread.")
 
 class GmailService:
- 
+
     TOKEN_PATH = "creds/gmail_token.json"
 
     def __init__(self, credentials_path: str):
@@ -85,6 +86,8 @@ class GmailService:
                 flow = InstalledAppFlow.from_client_secrets_file(self.credentials_path, self.scopes)
                 creds = flow.run_local_server(port=0)
             # Save the credentials for future use
+            if not os.path.exists(os.path.dirname(self.TOKEN_PATH)):
+                os.makedirs(os.path.dirname(self.TOKEN_PATH))
             with open(self.TOKEN_PATH, 'w') as token_file:
                 token_file.write(creds.to_json())
         return creds
