@@ -22,7 +22,8 @@ This README explains how to create new services and integrate them with the `LLM
   - [Service Implementation Guidelines](#service-implementation-guidelines)
   - [Integrating with LLMInterface](#integrating-with-llminterface)
 - [Examples](#examples)
-- [Configuration](#configuration)
+  - [CLI Examples](#cli-examples)
+  - [Streamlit Examples](#streamlit-examples)
 - [Contributing](#contributing)
 - [Roadmap](#roadmap)
 - [License](#license)
@@ -32,6 +33,7 @@ This README explains how to create new services and integrate them with the `LLM
 - **Unified LLM Interface**: A core interface that generates service schemas and handles tool calls without directly interacting with the LLM.
 - **Multi-Service Management**: Ability to integrate and manage multiple services at the same time.
 - **Extensible Service Integrations**: Easily add integrations with services like Jira, web search, code execution, and more.
+- **CLI and Web Interface Examples**: Demonstrations of both command-line and web-based applications using the toolkit.
 
 ## Installation
 
@@ -103,22 +105,28 @@ LLMToolkit/
 │       ├── services/
 │       │   ├── __init__.py
 │       │   ├── jira_service/
-│       │       ├── __init__.py
-│       │       ├── jira_service.py
+│       │   │   ├── __init__.py
+│       │   │   ├── jira_service.py
 │       │   ├── web_search_service/
-│       │       ├── __init__.py
-│       │       ├── web_search_service.py
-│       │   └── ... (other services)
+│       │   │   ├── __init__.py
+│       │   │   ├── web_search_service.py
+│       │   └── ... (other services) 
 ├── examples/
-│   ├── main.py
-│   ├── jira_example.py
-│   └── ... (other examples)
+    ├── cli/
+    │   ├── gmail_agent.py
+    │   ├── jira_agent.py
+    │   └── ... (other examples) 
+    └── streamlit/
+        ├── multi_service_agent_api.py
+        └── multi_service_agent_client.py
 ```
 
 - **`src/llmtoolkit/`**: Contains the source code for the project.
   - **`llminterface/`**: Core interface for managing function schemas and handling service calls.
   - **`services/`**: Service integrations, starting with Jira and potentially including others like web search.
 - **`examples/`**: Example scripts demonstrating how to use the library.
+  - **`cli/`**: Command-line interface examples.
+  - **`streamlit/`**: Streamlit web application examples.
 
 ## Quick Start
 
@@ -167,7 +175,7 @@ if __name__ == "__main__":
 
 In this example, the `LLMInterface` is initialized with both the `JiraService` and a hypothetical `WebSearchService`. The LLM will have access to functions from both services and can interact with them as needed during the conversation.
 
-### Running the Example
+### Running the CLI Example
 
 1. **Set Environment Variables**
 
@@ -183,7 +191,7 @@ In this example, the `LLMInterface` is initialized with both the `JiraService` a
 
    # Required for OpenAI client (if using OpenAI APIs)
    OPENAI_API_KEY=your-openai-api-key
-   OPENAI_MODEL=gpt-3.5-turbo  # or your desired model
+   OPENAI_MODEL=gpt-4o  # or your desired model
    ```
 
 2. **Activate the Virtual Environment**
@@ -195,8 +203,53 @@ In this example, the `LLMInterface` is initialized with both the `JiraService` a
 3. **Run the Example Script**
 
    ```bash
-   poetry run python examples/jira_agent.py
+   poetry run python examples/cli/jira_agent.py
    ```
+
+### Running the Streamlit Example
+
+The Streamlit example provides a web interface for interacting with the LLMToolkit.
+
+1. **Set Environment Variables**
+
+   Create a `.env` file in the root directory (or set the environment variables directly).
+
+   **`.env` File:**
+
+   ```
+   # Required for the JiraService
+   JIRA_SERVER=https://your-domain.atlassian.net
+   JIRA_USERNAME=your-email@example.com
+   JIRA_API_TOKEN=your-jira-api-token
+
+   # Required for OpenAI client (if using OpenAI APIs)
+   OPENAI_API_KEY=your-openai-api-key
+   OPENAI_MODEL=gpt-4o  # or your desired model
+
+   # Required for Gmail integration
+   GMAIL_CREDENTIALS_PATH=json-credential-path # https://developers.google.com/gmail/api/quickstart/python
+   ```
+
+2. **Activate the Virtual Environment**
+
+   ```bash
+   poetry shell
+   ```
+
+3. **Run the FastAPI api**
+
+   ```bash
+   poetry run python examples/streamlit/multi_service_agent_api.py
+   ```
+
+4. **Run the Streamlit Application**
+
+   ```bash
+   streamlit run examples/streamlit/multi_service_agent_client.py
+   ```
+
+   This will start the Streamlit app, and you can access it in your web browser at the URL provided in the terminal.
+
 
 ## Creating a New Service
 
@@ -318,31 +371,6 @@ One of the main goals of LLMToolkit is to make it easy to integrate new services
        # Add result to conversation messages
    ```
 
-## Examples
-
-The `examples/` directory contains scripts demonstrating how to use the `LLMInterface` and integrate services.
-
-- **`jira_example.py`**: Demonstrates usage with the `JiraService`.
-
-## Configuration
-
-### Environment Variables and `.env` File
-
-The examples use environment variables for configuration. You can set these variables in your shell or store them in a `.env` file.
-
-**Example `.env` File:**
-
-```
-# For the JiraService
-JIRA_SERVER=https://your-domain.atlassian.net
-JIRA_USERNAME=your-email@example.com
-JIRA_API_TOKEN=your-jira-api-token
-
-# For the LLM client (e.g., OpenAI)
-OPENAI_API_KEY=your-openai-api-key
-OPENAI_MODEL=gpt-3.5-turbo  # or your desired model
-```
-
 ## Contributing
 
 Contributions are welcome! Since the project focuses on enhancing the `LLMInterface` and demonstrating its extensibility, contributions in these areas are highly appreciated.
@@ -393,7 +421,7 @@ As LLMToolkit continues to develop, we have several plans to enhance its capabil
   - **ConfluenceService**: Integration with confluence to manage pages.
   - **CodeExecutionService**: Execute code snippets securely and return results.
   - **DatabaseService**: Interact with databases to query and manipulate data.
-  - **EmailService**: Send and receive emails.
+  - **OutlookService**: Outlook email and outlook calendar integration.
   - **SlackService**: Integration with Slack for messaging and automation.
 
 - **Enhanced Error Handling and Logging**: Improve the robustness of the framework by adding comprehensive error handling and detailed logging.
