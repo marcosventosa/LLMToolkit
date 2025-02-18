@@ -1,7 +1,9 @@
 import json
 import os
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from fastapi.responses import FileResponse
 import openai
 import tiktoken
 from dotenv import load_dotenv
@@ -10,6 +12,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from llmtoolkit.llm_interface.llm_interface import LLMInterface
+from llmtoolkit.services.code_interpreter_service.code_interpreter_service import CodeInterpreterService
+from llmtoolkit.services.esios_service.esios_service import EsiosService
 from llmtoolkit.services.gmail_service.gmail_service import GmailService
 from llmtoolkit.services.jira_service.jira_service import JiraService
 from llmtoolkit.services.web_search_service.web_search_service import WebSearchService
@@ -20,7 +24,7 @@ load_dotenv()
 # Constants
 MAX_TOOL_CALLS = 5
 MODEL_NAME = os.getenv("OPENAI_MODEL")
-DEFAULT_SYSTEM_MESSAGE = "Hello! I am your assistant, here to help you with Jira tasks, web searches and email management. How can I assist you today?"
+DEFAULT_ASSISTANT_MESSAGE = "Hello! I am your assistant, here to help you with Jira tasks, web searches and email management. How can I assist you today?"
 
 
 class Config:
@@ -53,18 +57,29 @@ class LlmAgent:
         )
         web_search_service = WebSearchService()
         gmail_service = GmailService(credentials_path=os.getenv("GMAIL_CREDENTIALS_PATH"))
-        self.llm_service_interface = LLMInterface([web_search_service, jira_service, gmail_service])
+        esios_service = EsiosService(api_token=os.getenv("ESIOS_API_TOKEN"))
+        code_interpreter_service = CodeInterpreterService()
+        self.llm_service_interface = LLMInterface([web_search_service, jira_service, gmail_service, esios_service])
+        #self.llm_service_interface = LLMInterface([esios_service,code_interpreter_service ])
         self.tools_schemas = self.llm_service_interface.get_function_schemas()
         self.client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         # Get agent system messages
         jira_agent_system_message = jira_service.get_agent_system_message()
         web_search_agent_system_message = web_search_service.get_agent_system_message()
         gmail_agent_system_message = gmail_service.get_agent_system_message()
+        esios_agent_system_message = esios_service.get_agent_system_message()
+        code_interpreter_system_message = code_interpreter_service.get_agent_system_message()
+
         self.system_message = (
             "You are an assistant capable of helping users with Jira tasks and performing web searches.\n\n"
+            #"You are an assistant capable of helping users with ESIOS questions.\n\n"
             f"{jira_agent_system_message}\n\n"
             f"{web_search_agent_system_message}\n\n"
-            f"{gmail_agent_system_message}"
+            f"{gmail_agent_system_message}\n\n"
+            #f"{esios_agent_system_message}\n\n"
+            #f"{code_interpreter_system_message}\n\n"
+            #f"To PLOT an image, include the path of the image such as this <[PLOT][caption]:image path> in your message. EJ: <[PLOT][Solar energy generation for 2024]:plots/plot_20241202_23713.png>\n"
+            #f"It needs to be <[PLOT][caption]:image path> or the image will not be displayed."
         )
 
     def count_tokens(self, text: str) -> int:
@@ -200,9 +215,10 @@ async def start_conversation():
     """Initialize a new conversation."""
     try:
         messages = [
-            {"role": "system", "content": agent.system_prompt},
-            {"role": "assistant", "content": DEFAULT_SYSTEM_MESSAGE}
+            {"role": "system", "content": agent.system_message},
+            {"role": "assistant", "content": DEFAULT_ASSISTANT_MESSAGE}
         ]
+        print("CONVERSATION STARTED")
         return APIResponse(messages=messages)
     except Exception as e:
         return APIResponse(messages=[], status="error", error=str(e))
@@ -223,6 +239,14 @@ async def send_message(user_input: UserInput):
     except Exception as e:
         return APIResponse(messages=[], status="error", error=str(e))
 
+@app.get("/plots/{image_name}")
+async def get_image(image_name: str):
+    """Serve a specific image file."""
+    image_path = Path("plots") / image_name
+    if not image_path.exists():
+        raise HTTPException(status_code=404, detail="Image not found")
+    return FileResponse(image_path)
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8002)

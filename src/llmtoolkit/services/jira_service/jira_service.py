@@ -44,6 +44,10 @@ class AddLabelToIssueModel(BaseModel):
     issue_key: str = Field(..., description="Key of the Jira issue (e.g., 'PROJ-123').")
     label: str = Field(..., description="Label to add to the issue.")
 
+class RemoveLabelToIssueModel(BaseModel):
+    issue_key: str = Field(..., description="Key of the Jira issue (e.g., 'PROJ-123').")
+    label: str = Field(..., description="Label to add to the issue.")
+
 class UpdateFieldToIssueModel(BaseModel):
     issue_key: str = Field(..., description="Key of the Jira issue (e.g., 'PROJ-123').")
     field_name: str = Field(..., description="Name of the field to add")
@@ -187,6 +191,14 @@ class JiraService:
         return f"Tag '{data.label}' added to issue {data.issue_key}."
 
     @expose_for_llm
+    def remove_label_from_issue(self, data: RemoveLabelToIssueModel) -> str:
+        """Removes a tag from a Jira issue."""
+        issue = self.jira.issue(data.issue_key)
+        issue.fields.labels.remove(data.label)
+        issue.update(fields={"labels": issue.fields.labels})
+        return f"Tag '{data.label}' removed from issue {data.issue_key}."
+
+    @expose_for_llm
     def update_field_of_issue(self, data: UpdateFieldToIssueModel) -> str:
         """Updates a specific field of a Jira issue."""
         issue = self.jira.issue(data.issue_key)
@@ -227,7 +239,6 @@ class JiraService:
         issue = self.jira.issue(data.issue_key)
         issue.update(fields={"priority": {"name": data.priority_name}})
         return f"Priority of issue {data.issue_key} changed to '{data.priority_name}'."
-
 
     @expose_for_llm
     def add_comment(self, data: AddCommentModel) -> str:
